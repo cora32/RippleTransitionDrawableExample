@@ -30,7 +30,11 @@ public class RippleTransitionDrawable extends TransitionDrawable {
     public RippleTransitionDrawable(BitmapDrawable[] layers) {
         super(layers);
         nextBitmap = layers[1].getBitmap();
-        output = Bitmap.createBitmap(nextBitmap.getWidth(), nextBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        if (output != null)
+            output.recycle();
+        if (output == null || output.isRecycled())
+            output = Bitmap.createBitmap(nextBitmap.getWidth(), nextBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
         nextBitmapWidthHalf = nextBitmap.getWidth() / 2;
         nextBitmapHeightHalf = nextBitmap.getHeight() / 2;
         cropCanvas = new Canvas(output);
@@ -60,18 +64,10 @@ public class RippleTransitionDrawable extends TransitionDrawable {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        if (output.isRecycled()) {
-            output = Bitmap.createBitmap(nextBitmap.getWidth(), nextBitmap.getHeight(), Bitmap.Config.ARGB_8888);
-        }
-
         path.reset();
         path.addCircle(nextBitmapWidthHalf, nextBitmapHeightHalf, radius, Path.Direction.CW);
         cropCanvas.drawPath(path, paint);
         cropCanvas.drawBitmap(nextBitmap, 0, 0, cropPaint);
         canvas.drawBitmap(output, 0, 0, paint);
-
-        if (!valueAnimator.isRunning()) {
-            output.recycle();
-        }
     }
 }
